@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>Flat Video Player</title>
+    <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+	   <div class="videoPlayer">
+         <video class="videoPlayer__video" >
+            <source src='http://iandevlin.com/html5/media-player/parrots.mp4' type='video/mp4'>
+            <source src='http://iandevlin.com/html5/media-player/parrots.webm' type='video/webm'>
+            <!-- <source src="http://www.nicolas-hoffmann.net/animations/Cavernae_Terragen2.mp4" type="video/mp4" /> -->
+            <!-- <source src="http://www.nicolas-hoffmann.net/animations/Cavernae_Terragen2.webm" type="video/webm" /> -->
+            <!-- <source src="http://www.nicolas-hoffmann.net/animations/Cavernae_Terragen2.theora.ogv" type="video/ogg" /> -->
+         </video>
+         <div class="videoPlayer__controls">
+            <button type="button" class="controls__playPause play"></button>
+            <div class="controls__progressbar">
+                <!-- <div class="progressbar__time"></div> -->
+                <div class="progressbar__bar"></div>
+            </div>
+
+            <div class="controls__volume">
+                <div class="volumeBar"><div class="volumeBar"></div></div>
+                <div class="volumeBar"><div class="volumeBar"></div></div>
+                <div class="volumeBar"><div class="volumeBar"></div></div>
+                <div class="volumeBar"><div class="volumeBar"></div></div>
+                <div class="volumeBar last"><div class="volumeBar"></div></div>
+                <div class="controls__volume__zone"></div>
+            </div>
+
+            <button type="button" class="controls__comment"></button>
+
+            <button type="button" class="controls__fullscreen"></button>
+         </div>
+      </div>
+
+      <script src="js/lib/jquery/dist/jquery.min.js"></script>
+      <script src="js/app.js"></script>
+
+</body>
+</html>

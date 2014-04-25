@@ -1,0 +1,23 @@
+{
+  "name": "flatVideoPlayer",
+  "version": "0.0.1",
+  "homepage": "https://github.com/pierregoutheraud/flatVideoPlayer",
+  "description": "HTML5 Video Player UI",
+  "main": "index.html",
+  "authors": [
+    "Pierre Gouthéraud <pierre.goutheraud@gmail.com>"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "js/lib",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "~2.1.0"
+  }
+}
