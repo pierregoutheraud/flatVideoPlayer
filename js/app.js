@@ -11,6 +11,7 @@ $(function(){
 		this.$volume = $('.controls__volume');
 		this.$volumeZone = $('.controls__volume__zone');
 		this.clickVolume = false;
+		this.mouse = {};
 		var that = this;
 
 		// Functions
@@ -43,13 +44,22 @@ $(function(){
 
 		};
 
-		this.changeVolume = function(e){
+		this.changeVolume = function(){
+
+			// console.log(this.mouse.x);
+			// console.log(this.$volumeZone.offset().left);
+
+			var mouseX = this.mouse.x - this.$volumeZone.offset().left;
+			if( mouseX < 0)
+				mouseX = 0;
+			else if( mouseX > this.$volumeZone.width() )
+				mouseX = that.$volumeZone.width();
 
 			// Ajouter un setTimeout pour pas spamer le setVolume == LAG
 
-			if( !that.clickVolume && e.type != "click" ) {
-				return false;
-			}
+			// if( !that.clickVolume && e.type != "click" ) {
+			// 	return false;
+			// }
 
 			$(this).addClass('active');
 
@@ -58,9 +68,9 @@ $(function(){
 			// var percentBarVolume = (volumeBarWidth*100)/volumeZoneWidth;
 			var percentBarVolume = 100 / $('.controls__volume > .volumeBar').length;
 
-			var mouseX = (e.offsetX != null) ? e.offsetX : e.originalEvent.layerX;
-			if( mouseX == 31 )
-				mouseX = 32;
+			// var mouseX = (e.offsetX != null) ? e.offsetX : e.originalEvent.layerX;
+			// if( mouseX == 31 )
+				// mouseX = 32;
 
 			var percentMouseX = (mouseX*100)/volumeZoneWidth;
 			if( percentMouseX > 95 )
@@ -77,12 +87,12 @@ $(function(){
 			$('.controls__volume > .volumeBar:eq('+(nbBarFull)+')').find('.volumeBar').css('width', lastPx + 'px' );
 
 			var newVolume = Math.round(parseFloat(percentMouseX/100)*100)/100;
-			console.log(newVolume);
+			// console.log(newVolume);
 			that.video.volume = newVolume;
 
-			if( e.type == "click" ) {
-				that.$volumeZone.removeClass('active');
-			}
+			// if( e.type == "click" ) {
+			// 	that.$volumeZone.removeClass('active');
+			// }
 
 		};
 
@@ -93,15 +103,29 @@ $(function(){
 		this.video.addEventListener('timeupdate', this.updateProgressBar, false);
 		// this.video.addEventListener('play', this.play );
 		// this.video.addEventListener('pause', this.pause );
-		this.$volumeZone.on( 'mousemove click', this.changeVolume );
-		this.$volumeZone.on('mousedown', function(){
-		    that.clickVolume = true;
+		// this.$volumeZone.on( 'mousemove click', this.changeVolume );
+		this.$volumeZone.on( 'dragstart drop', function(){
+			return false;
 		});
-		this.$volumeZone.on('dragstart drop', function(){
-		    return false;
+		// this.$volumeZone.on( 'click', this.changeVolume );
+		this.$volumeZone.on('mousedown', function(){
+		    that.mouse.clickVolume = true;
+		});
+
+		var canChangeVolume = true;
+		$(document).mousemove(function(e){
+			that.mouse.x = e.clientX;
+			that.mouse.y = e.clientY;
+			if( that.mouse.clickVolume && canChangeVolume ) {
+				canChangeVolume = false;
+				setTimeout(function(){
+					canChangeVolume = true;
+				}, 50);
+				that.changeVolume();
+			}
 		});
 		$(document).on('mouseup', function(){
-			that.clickVolume = false;
+			that.mouse.clickVolume = false;
 			that.$volumeZone.removeClass('active');
 		});
 
