@@ -1,3 +1,5 @@
+"use strict";
+
 $(function(){
 
 	var videoPlayer =  new function(){
@@ -6,15 +8,17 @@ $(function(){
 		this.$video = $('.videoPlayer__video');
 		this.video = this.$video[0];
 		this.$playPause = $('.controls__playPause');
+		this.$progressbar = $('.controls__progressbar');
 		this.$progressbarBar = $('.progressbar__bar');
 		this.$bufferBar = $('.progressbar__bufferbar');
 		this.progressPercentage = 0;
 		this.bufferPercentage = 0;
 		this.$volume = $('.controls__volume');
 		this.$volumeZone = $('.controls__volume__zone');
-		this.clickVolume = false;
 		this.$fullscreen = $('.controls__fullscreen');
-		this.mouse = {};
+		this.mouse = {
+			click : {}
+		};
 		var that = this;
 
 		// Functions
@@ -42,28 +46,81 @@ $(function(){
 
 		this.updateProgressBar = function(){
 			// this = video
-			that.progressPercentage = Math.floor((100 / this.duration) * this.currentTime);
+			// that.progressPercentage = Math.floor((100 / this.duration) * this.currentTime);
+			that.progressPercentage = (100 / this.duration) * this.currentTime;
 			that.$progressbarBar.css('width', that.progressPercentage + '%');
+
+			console.log( this.currentTime );
+			console.log( this.duration );
+
+			if( this.currentTime >= this.duration )
+				that.end();
 
 		};
 
+		this.end = function(){
+			this.$playPause.removeClass('pause').addClass('play');
+		};
+
+		var percentVidLoaded;
 		this.updateBufferBar = function(){
+			/*
+			console.log( this.buffered.end );
 			that.bufferPercentage = (this.buffered.end(0) / this.duration) * 100;
 			if( that.bufferPercentage > 100 )
 				that.bufferPercentage = 100;
 			that.$bufferBar.css('width', that.bufferPercentage + '%');
+			*/
+
+			percentVidLoaded = null;
+
+			// FF4+, Chrome
+			if (that.video && that.video.buffered && that.video.buffered.length > 0 && that.video.buffered.end && that.video.duration) {
+			    percentVidLoaded = that.video.buffered.end(0) / that.video.duration;
+			}
+			/* Some browsers (e.g., FF3.6 and Safari 5) cannot calculate target.bufferered.end()
+			 *  to be anything other than 0. If the byte count is available we use this instead.
+			 *  Browsers that support the else if do not seem to have the bufferedBytes value and
+			 *  should skip to there.
+			 */
+			else if (that.video && that.video.bytesTotal != undefined && that.video.bytesTotal > 0 && that.video.bufferedBytes != undefined) {
+			    percentVidLoaded = that.video.bufferedBytes / that.video.bytesTotal;
+			}
+
+			if (percentVidLoaded !== null) {
+			    percentVidLoaded = 100 * Math.min(1, Math.max(0, percentVidLoaded));
+			} else {
+				percentVidLoaded = 100;
+			}
+
+			that.$bufferBar.css('width', percentVidLoaded + '%');
+		};
+
+		this.changeTime = function(){
+			var mouseX = that.getMousePosXRelativeTo( that.$progressbar );
+			var barWidth = that.$progressbar.width();
+			var percentMouseX = (mouseX*100)/barWidth;
+			var newTime = (percentMouseX/100)*that.video.duration;
+			that.video.currentTime = newTime;
+			that.$progressbarBar.css('width', percentMouseX + '%');
+		};
+
+		this.getMousePosXRelativeTo = function( $el ){
+			// On récupère la position de la souris par rapport à la volumeZone
+			var mouseX = that.mouse.x - $el.offset().left;
+			if( mouseX < 0)
+				mouseX = 0;
+			else if( mouseX > $el.width() )
+				mouseX = $el.width();
+
+			return mouseX;
 		};
 
 		this.changeVolume = function(){
 
-			// On récupère la position de la souris par rapport à la volumeZone
-			var mouseX = that.mouse.x - that.$volumeZone.offset().left;
-			if( mouseX < 0)
-				mouseX = 0;
-			else if( mouseX > that.$volumeZone.width() )
-				mouseX = that.$volumeZone.width();
+			var mouseX = that.getMousePosXRelativeTo( that.$volumeZone );
 
-			// if( !that.clickVolume && e.type != "click" ) {
+			// if( !that.click.volume && e.type != "click" ) {
 			// 	return false;
 			// }
 			// $(this).addClass('active');
@@ -100,18 +157,38 @@ $(function(){
 			that.$videoPlayer.removeClass('controls-hidden');
 		};
 		this.hideControls = function(){
+
+			// On ne cache pas si on est en train de changer le time ou le volume
+			if( that.mouse.click.volume || that.mouse.click.time )
+				return false;
+
 			that.$videoPlayer.addClass('controls-hidden');
 		};
 
 		this.togglefullscreen = function(){
-			that.$videoPlayer.toggleClass('fullscreen');
-			if (that.video.requestFullscreen) {
-				that.video.requestFullscreen();
-			} else if (that.video.mozRequestFullScreen) {
-				that.video.mozRequestFullScreen(); // Firefox
-			} else if (that.video.webkitRequestFullscreen) {
-				that.video.webkitRequestFullscreen(); // Chrome and Safari
+
+			if( that.$videoPlayer.hasClass('fullscreen') ){
+
+				if (that.video.ExitFullscreen) {
+					that.video.ExitFullscreen();
+				} else if (that.video.mozExitFullScreen) {
+					that.video.mozExitFullScreen(); // Firefox
+				} else if (that.video.webkitExitFullscreen) {
+					that.video.webkitExitFullscreen(); // Chrome and Safari
+				}
+
+			} else {
+
+				if (that.video.requestFullscreen) {
+					that.video.requestFullscreen();
+				} else if (that.video.mozRequestFullScreen) {
+					that.video.mozRequestFullScreen(); // Firefox
+				} else if (that.video.webkitRequestFullscreen) {
+					that.video.webkitRequestFullscreen(); // Chrome and Safari
+				}
 			}
+
+			that.$videoPlayer.toggleClass('fullscreen');
 		};
 
 		this.init();
@@ -125,21 +202,29 @@ $(function(){
 		this.video.addEventListener('progress', this.updateBufferBar, false);
 		// this.video.addEventListener('play', this.play );
 		// this.video.addEventListener('pause', this.pause );
-		// this.$volumeZone.on( 'mousemove click', this.changeVolume );
-		this.$volumeZone.on( 'dragstart drop', function(){
+		this.$volumeZone.add(this.$progressbar).on( 'dragstart drop', function(){
 			return false;
 		});
 		this.$volumeZone.on( 'click', this.changeVolume );
+		this.$progressbar.on( 'click', this.changeTime );
 		this.$volumeZone.on('mousedown', function(){
-		    that.mouse.clickVolume = true;
+		    that.mouse.click.volume = true;
+		});
+		this.$progressbar.on('mousedown', function(){
+			that.pause();
+		    that.mouse.click.time = true;
 		});
 
 		var canChangeVolume = true,
+			canChangeTime = true,
 			timeoutMousemove;
+
+		// MOUSE MOVE
 		$(document).mousemove(function(e){
 			that.mouse.x = e.clientX;
 			that.mouse.y = e.clientY;
-			if( that.mouse.clickVolume && canChangeVolume ) {
+
+			if( that.mouse.click.volume && canChangeVolume ) {
 				canChangeVolume = false;
 				setTimeout(function(){
 					canChangeVolume = true;
@@ -147,14 +232,25 @@ $(function(){
 				that.changeVolume();
 			}
 
-			// Detect when mouse not moving
+			if( that.mouse.click.time && canChangeTime ) {
+				canChangeTime = false;
+				setTimeout(function(){
+					canChangeTime = true;
+				}, 50);
+				that.changeTime();
+			}
+
+			// Detect when mouse is not moving
 			clearTimeout(timeoutMousemove);
 			timeoutMousemove = setTimeout(function(){
 				that.hideControls();
 			},2000);
 		});
+
+		// MOUSE UP
 		$(document).on('mouseup', function(){
-			that.mouse.clickVolume = false;
+			that.mouse.click.volume = false;
+			that.mouse.click.time = false;
 			that.$volumeZone.removeClass('active');
 		});
 
