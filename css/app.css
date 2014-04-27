@@ -18,8 +18,8 @@ html, body {
 	margin-top: 50px;
 	overflow: hidden;
 
-	width: 50%;
-	height: 60%;
+	width: 900px;
+	height: 400px;
 }
 
 .videoPlayer__video {
@@ -44,10 +44,23 @@ html, body {
 	transition: bottom 250ms ease, opacity 350ms ease;
 }
 
+.videoPlayer__zone {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 2147483647;
+	display: none;
+}
+
 /*  ---------------
 	Controls Hidden
 	---------------  */
 
+.videoPlayer.controls-hidden {
+	cursor: none;
+}
 .videoPlayer.controls-hidden .videoPlayer__controls {
 	bottom: -5px;
 	opacity: 0;
@@ -59,7 +72,7 @@ html, body {
 
 .videoPlayer.fullscreen .videoPlayer__controls {
 	z-index: 2147483647;
-	/*position: absolute;*/
+	/*z-index: 9999999999;*/
 }
 /*hide controls from shadow DOM in webkit browsers*/
 /* hides controls only in fullscreen, but shows them in normal screen even if controls is set to false*/
