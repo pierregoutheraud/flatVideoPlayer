@@ -131,6 +131,7 @@ button:focus {
 	right: 108px;
 }
 
+.progressbar__mousetime,
 .progressbar__time {
 	position: absolute;
 	top: -31px;
@@ -138,7 +139,8 @@ button:focus {
 	right: 29px;
 	z-index: 5;
 }
-.progressbar__time > div {
+.progressbar__mousetime div,
+.progressbar__time div {
 	width: 57px;
 	height: 11px;
 	background-color: rgba(0,0,0,.6);
@@ -146,11 +148,12 @@ button:focus {
 	position: absolute;
 	top: 0;
 	left: 0%;
-
-	/*transition: left 400ms ease;*/
-	/*-webkit-transition: left 400ms ease;*/
 }
-.progressbar__time span {
+.progressbar__mousetime div {
+	background-color: rgba(0,0,0,.4);
+}
+.progressbar__mousetime div span,
+.progressbar__time div span {
 	position: relative;
 	top: 5px;
 
@@ -158,6 +161,14 @@ button:focus {
 	font-weight: 600;
 	font-size: 11px;
 	color: #fff;
+}
+.progressbar__mousetime {
+	opacity: 0;
+	-webkit-transition: opacity 300ms ease;
+	transition: opacity 300ms ease;
+}
+.videoPlayer.mousetime-visible .progressbar__mousetime {
+	opacity: 1;
 }
 
 .progressbar__border {

@@ -33,6 +33,7 @@ $(function(){
 		this.$playerZone = $('.videoPlayer__zone');
 		this.$playerControls = $('.videoPlayer__controls');
 		this.$playerTime = $('.progressbar__time > div');
+		this.$playerMouseTime = $('.progressbar__mousetime > div');
 		this.time = {
 			current : {
 				minutes : 0,
@@ -46,7 +47,8 @@ $(function(){
 			}
 		};
 		this.mouse = {
-			click : {}
+			click : {},
+			mouseenter : {}
 		};
 		this.canChangeVolume = true;
 		this.canChangeTime = true;
@@ -64,7 +66,7 @@ $(function(){
 		this.initDuration = function(){
 			this.time.duration.seconds = this.video.duration;
 			this.time.duration.format = this.toFormatMinutesSeconds( this.time.duration.seconds );
-			this.setTime( this.time.duration.format );
+			this.setTextTime( this.time.duration.format );
 		}
 
 		// seconds to minutes and seconds
@@ -80,8 +82,11 @@ $(function(){
 				return number;
 			}
 		};
-		this.setTime = function( timeString ) {
+		this.setTextTime = function( timeString ) {
 			that.$playerTime.find('span').text( timeString );
+		};
+		this.setMouseTextTime = function( timeString ) {
+			that.$playerMouseTime.find('span').text( timeString );
 		};
 
 
@@ -116,29 +121,28 @@ $(function(){
 			that.progressPercentage = (100 / this.duration) * this.currentTime;
 			that.$progressbarBar.css('width', that.progressPercentage + '%');
 
-			that.time.current.seconds = that.video.currentTime;
-			that.time.current.format = that.toFormatMinutesSeconds( that.time.current.seconds );
-			that.setTime( that.time.current.format );
-
-			// Move time
-			that.$playerTime.css('left', that.progressPercentage + '%');
-
-			/*
-			// that.time.seconds = this.currentTime.toFixed(1);
-			that.time.minutes = parseInt( this.currentTime / 60 );
-			that.time.minutes = (that.time.minutes < 10) ? '0' + that.time.minutes : that.time.minutes;
-
-			that.time.seconds = (this.currentTime % 60).toFixed(0);
-			that.time.seconds = (that.time.seconds < 10) ? '0' + that.time.seconds : that.time.seconds;
-
-			that.time.currentTimeString = that.time.minutes + ':' + that.time.seconds;
-			that.$playerTime.find('span').text( that.time.currentTimeString );
-			that.$playerTime.css('left', that.progressPercentage + '%');
-			*/
+			that.updateTime();
 
 			if( this.currentTime >= this.duration )
 				that.end();
 
+		};
+
+		this.setMouseTime = function( seconds, percent ){
+			var mouseTime = this.toFormatMinutesSeconds( seconds );
+			this.setMouseTextTime( mouseTime );
+			that.$playerMouseTime.show().css('left', percent + '%');
+		};
+		this.setTime = function( seconds, percent ){
+			this.time.current.format = this.toFormatMinutesSeconds( seconds );
+			this.setTextTime( this.time.current.format );
+			that.$playerTime.css('left', percent + '%');
+		};
+		this.updateTime = function(){
+			this.time.current.seconds = this.video.currentTime;
+			this.time.current.format = this.toFormatMinutesSeconds( this.time.current.seconds );
+			this.setTextTime( this.time.current.format );
+			that.$playerTime.css('left', that.progressPercentage + '%');
 		};
 
 		this.end = function(){
@@ -184,8 +188,17 @@ $(function(){
 			var barWidth = that.$progressbar.width();
 			var percentMouseX = (mouseX*100)/barWidth;
 			var newTime = (percentMouseX/100)*that.video.duration;
-			that.video.currentTime = newTime;
 			that.$progressbarBar.css('width', percentMouseX + '%');
+			that.setTime( newTime, percentMouseX );
+			that.video.currentTime = newTime;
+		};
+
+		this.changeMouseTime = function(){
+			var mouseX = that.getMousePosXRelativeTo( that.$progressbar );
+			var barWidth = that.$progressbar.width();
+			var percentMouseX = (mouseX*100)/barWidth;
+			var newTime = (percentMouseX/100)*that.video.duration;
+			that.setMouseTime( newTime, percentMouseX );
 		};
 
 		this.getMousePosXRelativeTo = function( $el ){
@@ -288,8 +301,6 @@ $(function(){
 			that.mouse.x = e.clientX;
 			that.mouse.y = e.clientY;
 
-			// console.log(e.clientX);
-
 			if( that.mouse.click.volume && that.canChangeVolume ) {
 				that.canChangeVolume = false;
 				setTimeout(function(){
@@ -302,6 +313,11 @@ $(function(){
 					that.canChangeTime = true;
 				}, 50);
 				that.changeTime();
+			}
+
+			// Detect mouseenter + mousemove on time
+			if( that.mouse.mouseenter.time ) {
+				that.changeMouseTime();
 			}
 
 			// Detect when mouse is not moving
@@ -336,8 +352,18 @@ $(function(){
 		    that.mouse.click.volume = true;
 		});
 		this.$progressbar.on('mousedown', function(){
-			that.pause();
+			// that.pause();
 		    that.mouse.click.time = true;
+		});
+		// HOVER ON PROGRESS BAR
+		this.$progressbar.on('mouseenter', function(){
+			that.mouse.mouseenter.time = true;
+			that.$videoPlayer.addClass('mousetime-visible');
+		});
+		// HOVER OFF PROGRESS BAR
+		this.$progressbar.on('mouseleave', function(){
+			that.mouse.mouseenter.time = false;
+			that.$videoPlayer.removeClass('mousetime-visible');
 		});
 
 		// MOUSE MOVE
