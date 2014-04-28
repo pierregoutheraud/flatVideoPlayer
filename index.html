@@ -7,25 +7,24 @@
 </head>
 <body>
 
-	   <div class="videoPlayer comment-hidden">
-         <video class="videoPlayer__video" >
-            <source src='http://iandevlin.com/html5/media-player/parrots.mp4' type='video/mp4'>
-            <source src='http://iandevlin.com/html5/media-player/parrots.webm' type='video/webm'>
-            <!-- <source src="http://www.nicolas-hoffmann.net/animations/Cavernae_Terragen2.mp4" type="video/mp4" /> -->
-            <!-- <source src="http://www.nicolas-hoffmann.net/animations/Cavernae_Terragen2.webm" type="video/webm" /> -->
-            <!-- <source src="http://www.nicolas-hoffmann.net/animations/Cavernae_Terragen2.theora.ogv" type="video/ogg" /> -->
+    <div class="videoPlayer comment-hidden">
+        <video class="videoPlayer__video" >
+            <source src="http://vjs.zencdn.net/v/oceans.mp4" type="video/mp4">
+            <source src="http://vjs.zencdn.net/v/oceans.webm" type="video/webm">
          </video>
          <div class="videoPlayer__zone"></div>
-         <div class="videoPlayer__controls">
-            <button type="button" class="controls__playPause play"></button>
-            <div class="controls__progressbar">
-                <!-- <div class="progressbar__time"></div> -->
-                <div class="progressbar__bar"></div>
-                <div class="progressbar__border">
-                  <div class="progressbar__bufferbar"></div>
-                </div>
-            </div>
-            <div class="controls__volume">
+            <div class="videoPlayer__controls">
+                <button type="button" class="controls__playPause play"></button>
+                <div class="controls__progressbar">
+                    <div class="progressbar__time">
+                        <div><span>00:00</span></div>
+                    </div>
+                    <div class="progressbar__bar"></div>
+                    <div class="progressbar__border">
+                      <div class="progressbar__bufferbar"></div>
+                  </div>
+              </div>
+              <div class="controls__volume">
                 <div class="volumeBar"><div class="volumeBar"></div></div>
                 <div class="volumeBar"><div class="volumeBar"></div></div>
                 <div class="volumeBar"><div class="volumeBar"></div></div>
@@ -35,11 +34,11 @@
             </div>
             <button type="button" class="controls__comment"></button>
             <button type="button" class="controls__fullscreen"></button>
-         </div>
-      </div>
+        </div>
+    </div>
 
-      <script src="js/lib/jquery/dist/jquery.min.js"></script>
-      <script src="js/app.js"></script>
+    <script src="js/lib/jquery/dist/jquery.min.js"></script>
+    <script src="js/app.js"></script>
 
 </body>
 </html>

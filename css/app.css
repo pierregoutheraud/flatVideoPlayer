@@ -131,6 +131,35 @@ button:focus {
 	right: 108px;
 }
 
+.progressbar__time {
+	position: absolute;
+	top: -31px;
+	left: -28px;
+	right: 29px;
+	z-index: 5;
+}
+.progressbar__time > div {
+	width: 57px;
+	height: 11px;
+	background-color: rgba(0,0,0,.6);
+
+	position: absolute;
+	top: 0;
+	left: 0%;
+
+	/*transition: left 400ms ease;*/
+	/*-webkit-transition: left 400ms ease;*/
+}
+.progressbar__time span {
+	position: relative;
+	top: 5px;
+
+	font-family: 'Open Sans', 'sans-serif';
+	font-weight: 600;
+	font-size: 11px;
+	color: #fff;
+}
+
 .progressbar__border {
 	position: absolute;
 	top: 0;

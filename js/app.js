@@ -1,5 +1,19 @@
 "use strict";
 
+// Open Sans Google Font
+var WebFontConfig = {
+	google: { families: [ 'Open+Sans:400italic,400,600,700:latin' ] }
+};
+(function() {
+	var wf = document.createElement('script');
+	wf.src = ('https:' == document.location.protocol ? 'https' : 'http') +
+	'://ajax.googleapis.com/ajax/libs/webfont/1/webfont.js';
+	wf.type = 'text/javascript';
+	wf.async = 'true';
+	var s = document.getElementsByTagName('script')[0];
+	s.parentNode.insertBefore(wf, s);
+})();
+
 $(function(){
 
 	var videoPlayer =  new function(){
@@ -18,6 +32,19 @@ $(function(){
 		this.$fullscreen = $('.controls__fullscreen');
 		this.$playerZone = $('.videoPlayer__zone');
 		this.$playerControls = $('.videoPlayer__controls');
+		this.$playerTime = $('.progressbar__time > div');
+		this.time = {
+			current : {
+				minutes : 0,
+				seconds : 0,
+				format : ""
+			},
+			duration : {
+				minutes : 0,
+				seconds : 0,
+				format : ""
+			}
+		};
 		this.mouse = {
 			click : {}
 		};
@@ -32,6 +59,31 @@ $(function(){
 			this.video.controls = false;
 			this.video.volume = 1;
 		};
+
+		// Set la duration de la vidéo et l'affiche
+		this.initDuration = function(){
+			this.time.duration.seconds = this.video.duration;
+			this.time.duration.format = this.toFormatMinutesSeconds( this.time.duration.seconds );
+			this.setTime( this.time.duration.format );
+		}
+
+		// seconds to minutes and seconds
+		this.toFormatMinutesSeconds = function( totalSeconds ){
+			var minutes = this.addZero( parseInt( totalSeconds / 60 ) );
+			var seconds = this.addZero(  ( totalSeconds % 60 ).toFixed(0) );
+			return minutes + ':' + seconds;
+		};
+		this.addZero = function( number ){
+			if( number < 10 ){
+				return '0' + number;
+			} else {
+				return number;
+			}
+		};
+		this.setTime = function( timeString ) {
+			that.$playerTime.find('span').text( timeString );
+		};
+
 
 		this.playPause = function(){
 			if (that.video.paused || that.video.ended)
@@ -50,11 +102,39 @@ $(function(){
 			this.video.pause();
 		};
 
+		var isDurationInit = false;
 		this.updateProgressBar = function(){
+
+			if( !isDurationInit ) {
+				that.initDuration();
+				isDurationInit = true;
+				return false;
+			}
+
 			// this = video
-			// that.progressPercentage = Math.floor((100 / this.duration) * this.currentTime);
+			that.progressPercentage = Math.floor((100 / this.duration) * this.currentTime);
 			that.progressPercentage = (100 / this.duration) * this.currentTime;
 			that.$progressbarBar.css('width', that.progressPercentage + '%');
+
+			that.time.current.seconds = that.video.currentTime;
+			that.time.current.format = that.toFormatMinutesSeconds( that.time.current.seconds );
+			that.setTime( that.time.current.format );
+
+			// Move time
+			that.$playerTime.css('left', that.progressPercentage + '%');
+
+			/*
+			// that.time.seconds = this.currentTime.toFixed(1);
+			that.time.minutes = parseInt( this.currentTime / 60 );
+			that.time.minutes = (that.time.minutes < 10) ? '0' + that.time.minutes : that.time.minutes;
+
+			that.time.seconds = (this.currentTime % 60).toFixed(0);
+			that.time.seconds = (that.time.seconds < 10) ? '0' + that.time.seconds : that.time.seconds;
+
+			that.time.currentTimeString = that.time.minutes + ':' + that.time.seconds;
+			that.$playerTime.find('span').text( that.time.currentTimeString );
+			that.$playerTime.css('left', that.progressPercentage + '%');
+			*/
 
 			if( this.currentTime >= this.duration )
 				that.end();
@@ -231,9 +311,12 @@ $(function(){
 			},1500);
 		};
 
-		this.init();
-
 		// Events
+		// this.video.addEventListener('readystatechange ', function(){console.log('state change');});
+		this.video.addEventListener('durationchange', function(){
+			// A partir de là on récup la duration
+			that.init();
+		});
 		this.$videoPlayer.on('mouseenter mousemove', this.showControls);
 		this.$videoPlayer.on('mouseleave', this.hideControls);
 		this.$playPause.on('click', this.playPause);
