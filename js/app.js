@@ -24,6 +24,7 @@ $(function(){
 		this.$playPause = $('.controls__playPause');
 		this.$progressbar = $('.controls__progressbar');
 		this.$progressbarBar = $('.progressbar__bar');
+		this.$progressbarBorder = $('.progressbar__border');
 		this.$bufferBar = $('.progressbar__bufferbar');
 		this.progressPercentage = 0;
 		this.bufferPercentage = 0;
@@ -322,9 +323,11 @@ $(function(){
 
 			// Detect when mouse is not moving
 			clearTimeout(that.timeoutMousemove);
-			that.timeoutMousemove = setTimeout(function(){
-				that.hideControls();
-			},1500);
+			if( !that.mouse.mouseenter.time ) {
+				that.timeoutMousemove = setTimeout(function(){
+					that.hideControls();
+				},1500);
+			}
 		};
 
 		// Events
@@ -356,7 +359,7 @@ $(function(){
 		    that.mouse.click.time = true;
 		});
 		// HOVER ON PROGRESS BAR
-		this.$progressbar.on('mouseenter', function(){
+		this.$progressbarBar.add( this.$progressbarBorder ).on('mouseenter', function(){
 			that.mouse.mouseenter.time = true;
 			that.$videoPlayer.addClass('mousetime-visible');
 		});
