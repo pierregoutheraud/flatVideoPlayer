@@ -14,27 +14,27 @@ var WebFontConfig = {
 	s.parentNode.insertBefore(wf, s);
 })();
 
-$(function(){
+document.addEventListener('DOMContentLoaded', function(){
 
 	var videoPlayer =  new function(){
 
-		this.$videoPlayer = $('.videoPlayer');
-		this.$video = $('.videoPlayer__video');
-		this.video = this.$video[0];
-		this.$playPause = $('.controls__playPause');
-		this.$progressbar = $('.controls__progressbar');
-		this.$progressbarBar = $('.progressbar__bar');
-		this.$progressbarBorder = $('.progressbar__border');
-		this.$bufferBar = $('.progressbar__bufferbar');
+		this.videoPlayer = document.querySelector('.videoPlayer');
+
+		this.video = document.querySelector('.videoPlayer__video');
+		this.videoPlayPause = document.querySelector('.controls__playPause');
+		this.progressbar = document.querySelector('.controls__progressbar');
+		this.progressbarBar = document.querySelector('.progressbar__bar');
+		this.progressbarBorder = document.querySelector('.progressbar__border');
+		this.bufferBar = document.querySelector('.progressbar__bufferbar');
 		this.progressPercentage = 0;
 		this.bufferPercentage = 0;
-		this.$volume = $('.controls__volume');
-		this.$volumeZone = $('.controls__volume__zone');
-		this.$fullscreen = $('.controls__fullscreen');
-		this.$playerZone = $('.videoPlayer__zone');
-		this.$playerControls = $('.videoPlayer__controls');
-		this.$playerTime = $('.progressbar__time > div');
-		this.$playerMouseTime = $('.progressbar__mousetime > div');
+		this.volume = document.querySelector('.controls__volume');
+		this.volumeZone = document.querySelector('.controls__volume__zone');
+		this.fullscreen = document.querySelector('.controls__fullscreen');
+		this.playerZone = document.querySelector('.videoPlayer__zone');
+		this.playerControls = document.querySelector('.videoPlayer__controls');
+		this.playerTime = document.querySelector('.progressbar__time > div');
+		this.playerMouseTime = document.querySelector('.progressbar__mousetime > div');
 		this.time = {
 			current : {
 				minutes : 0,
@@ -48,6 +48,8 @@ $(function(){
 			}
 		};
 		this.mouse = {
+			x : 0,
+			y : 0,
 			click : {},
 			mouseenter : {}
 		};
@@ -84,12 +86,11 @@ $(function(){
 			}
 		};
 		this.setTextTime = function( timeString ) {
-			that.$playerTime.find('span').text( timeString );
+			that.playerTime.querySelector('span').textContent = timeString;
 		};
 		this.setMouseTextTime = function( timeString ) {
-			that.$playerMouseTime.find('span').text( timeString );
+			that.playerMouseTime.querySelector('span').textContent = timeString;
 		};
-
 
 		this.playPause = function(){
 			if (that.video.paused || that.video.ended)
@@ -99,12 +100,14 @@ $(function(){
 		};
 		this.play = function(){
 			// console.log('play function');
-			this.$playPause.removeClass('play').addClass('pause');
+			this.videoPlayPause.classList.remove('play');
+			this.videoPlayPause.classList.add('pause');
 			this.video.play();
 		};
 		this.pause = function(){
 			// console.log('pause function');
-			this.$playPause.removeClass('pause').addClass('play');
+			this.videoPlayPause.classList.remove('pause');
+			this.videoPlayPause.classList.add('play');
 			this.video.pause();
 		};
 
@@ -120,7 +123,7 @@ $(function(){
 			// this = video
 			that.progressPercentage = Math.floor((100 / this.duration) * this.currentTime);
 			that.progressPercentage = (100 / this.duration) * this.currentTime;
-			that.$progressbarBar.css('width', that.progressPercentage + '%');
+			that.progressbarBar.style.width = that.progressPercentage + '%';
 
 			that.updateTime();
 
@@ -132,33 +135,27 @@ $(function(){
 		this.setMouseTime = function( seconds, percent ){
 			var mouseTime = this.toFormatMinutesSeconds( seconds );
 			this.setMouseTextTime( mouseTime );
-			that.$playerMouseTime.show().css('left', percent + '%');
+			that.playerMouseTime.style.display = 'block';
+			that.playerMouseTime.style.left = percent + '%';
 		};
 		this.setTime = function( seconds, percent ){
 			this.time.current.format = this.toFormatMinutesSeconds( seconds );
 			this.setTextTime( this.time.current.format );
-			that.$playerTime.css('left', percent + '%');
+			that.playerTime.style.left = percent + '%';
 		};
 		this.updateTime = function(){
 			this.time.current.seconds = this.video.currentTime;
 			this.time.current.format = this.toFormatMinutesSeconds( this.time.current.seconds );
 			this.setTextTime( this.time.current.format );
-			that.$playerTime.css('left', that.progressPercentage + '%');
+			that.playerTime.style.left = that.progressPercentage + '%';
 		};
 
 		this.end = function(){
-			this.$playPause.removeClass('pause').addClass('play');
+			this.$playPause.classList.remove('pause').classList.add('play');
 		};
 
 		var percentVidLoaded;
 		this.updateBufferBar = function(){
-			/*
-			console.log( this.buffered.end );
-			that.bufferPercentage = (this.buffered.end(0) / this.duration) * 100;
-			if( that.bufferPercentage > 100 )
-				that.bufferPercentage = 100;
-			that.$bufferBar.css('width', that.bufferPercentage + '%');
-			*/
 
 			percentVidLoaded = null;
 
@@ -166,11 +163,11 @@ $(function(){
 			if (that.video && that.video.buffered && that.video.buffered.length > 0 && that.video.buffered.end && that.video.duration) {
 			    percentVidLoaded = that.video.buffered.end(0) / that.video.duration;
 			}
-			/* Some browsers (e.g., FF3.6 and Safari 5) cannot calculate target.bufferered.end()
-			 *  to be anything other than 0. If the byte count is available we use this instead.
-			 *  Browsers that support the else if do not seem to have the bufferedBytes value and
-			 *  should skip to there.
-			 */
+
+			// Some browsers (e.g., FF3.6 and Safari 5) cannot calculate target.bufferered.end()
+			//  to be anything other than 0. If the byte count is available we use this instead.
+			//  Browsers that support the else if do not seem to have the bufferedBytes value and
+			//  should skip to there.
 			else if (that.video && that.video.bytesTotal != undefined && that.video.bytesTotal > 0 && that.video.bufferedBytes != undefined) {
 			    percentVidLoaded = that.video.bufferedBytes / that.video.bytesTotal;
 			}
@@ -181,77 +178,92 @@ $(function(){
 				percentVidLoaded = 100;
 			}
 
-			that.$bufferBar.css('width', percentVidLoaded + '%');
+			that.bufferBar.style.width = percentVidLoaded + '%';
 		};
 
 		this.changeTime = function(){
-			var mouseX = that.getMousePosXRelativeTo( that.$progressbar );
-			var barWidth = that.$progressbar.width();
+			var mouseX = that.getMousePosXRelativeTo( that.progressbar );
+			var barWidth = that.progressbar.offsetWidth;
 			var percentMouseX = (mouseX*100)/barWidth;
 			var newTime = (percentMouseX/100)*that.video.duration;
-			that.$progressbarBar.css('width', percentMouseX + '%');
+			that.progressbarBar.style.width = percentMouseX + '%';
 			that.setTime( newTime, percentMouseX );
 			that.video.currentTime = newTime;
 		};
 
 		this.changeMouseTime = function(){
-			var mouseX = that.getMousePosXRelativeTo( that.$progressbar );
-			var barWidth = that.$progressbar.width();
+			var mouseX = that.getMousePosXRelativeTo( that.progressbar );
+			var barWidth = that.progressbar.offsetWidth;
 			var percentMouseX = (mouseX*100)/barWidth;
 			var newTime = (percentMouseX/100)*that.video.duration;
 			that.setMouseTime( newTime, percentMouseX );
 		};
 
-		this.getMousePosXRelativeTo = function( $el ){
+		this.getMousePosXRelativeTo = function( el ){
 			// On récupère la position de la souris par rapport à la volumeZone
-			var mouseX = that.mouse.x - $el.offset().left;
+			var rectEl = el.getBoundingClientRect();
+
+			var elOffset = {
+				top: rectEl.top + document.body.scrollTop,
+				left: rectEl.left + document.body.scrollLeft
+			}
+			var mouseX = that.mouse.x - elOffset.left;
 			if( mouseX < 0)
 				mouseX = 0;
-			else if( mouseX > $el.width() )
-				mouseX = $el.width();
+			else if( mouseX > el.offsetWidth )
+				mouseX = el.offsetWidth;
 
 			return mouseX;
 		};
 
 		this.changeVolume = function(){
 
-			var mouseX = that.getMousePosXRelativeTo( that.$volumeZone );
+			var mouseX = that.getMousePosXRelativeTo( that.volumeZone );
 
 			// if( !that.click.volume && e.type != "click" ) {
 			// 	return false;
 			// }
-			// $(this).addClass('active');
+			// $(this).classList.add('active');
 
-			var volumeZoneWidth = that.$volumeZone.width(),
-				volumeBarWidth = parseInt( $('.controls__volume > .volumeBar').width() ),
-				percentBarVolume = 100 / $('.controls__volume > .volumeBar').length;
+			var volumeZoneWidth = that.volumeZone.offsetWidth,
+				volumeBarWidth = parseInt( document.querySelector('.controls__volume > .volumeBar').offsetWidth ),
+				percentBarVolume = 100 / document.querySelector('.controls__volume > .volumeBar').length;
 
 			var percentMouseX = (mouseX*100)/volumeZoneWidth;
 			if( percentMouseX > 95 )
 				percentMouseX = 100;
 
 			// On ramène le résultat à une proportion pour une largeur sans les marges (qui font 3px) entre les bars
-			mouseX *= ((($('.controls__volume > .volumeBar').length*volumeBarWidth)*100)/volumeZoneWidth)/100;
+			mouseX *= (((document.querySelectorAll('.controls__volume > .volumeBar').length*volumeBarWidth)*100)/volumeZoneWidth)/100;
 
 			var nbBarFull = Math.floor(mouseX/volumeBarWidth);
 			var lastPx = Math.round(mouseX%volumeBarWidth);
 
-			$('.controls__volume > .volumeBar').find('.volumeBar').css('width', '0' );
-			$('.controls__volume > .volumeBar:lt('+nbBarFull+')').find('.volumeBar').css('width', '100%' );
-			$('.controls__volume > .volumeBar:eq('+(nbBarFull)+')').find('.volumeBar').css('width', lastPx + 'px' );
+			var volumeBars = document.querySelectorAll('.controls__volume > .volumeBar');
+
+			Array.prototype.forEach.call(volumeBars, function(el, i){
+
+				if( i < nbBarFull ) {
+					el.querySelector('.volumeBar').style.width = '100%';
+				} else if( i == nbBarFull ) {
+					el.querySelector('.volumeBar').style.width = lastPx + 'px';
+				} else {
+					el.querySelector('.volumeBar').style.width = '0';
+				}
+			});
 
 			var newVolume = Math.round(parseFloat(percentMouseX/100)*100)/100;
 			// console.log(newVolume);
 			that.video.volume = newVolume;
 
 			// if( e.type == "click" ) {
-			// 	that.$volumeZone.removeClass('active');
+			// 	that.$volumeZone.classList.remove('active');
 			// }
 
 		};
 
 		this.showControls = function(){
-			that.$videoPlayer.removeClass('controls-hidden');
+			that.videoPlayer.classList.remove('controls-hidden');
 		};
 		this.hideControls = function(){
 
@@ -259,26 +271,27 @@ $(function(){
 			if( that.mouse.click.volume || that.mouse.click.time )
 				return false;
 
-			that.$videoPlayer.addClass('controls-hidden');
-
+			that.videoPlayer.classList.add('controls-hidden');
 		};
 
 		this.togglefullscreen = function(){
 
 
-			if( that.$videoPlayer.hasClass('fullscreen') ){
+			if( that.videoPlayer.classList.contains('fullscreen') ){
 
-				if (that.video.ExitFullscreen) {
-					that.video.ExitFullscreen();
-				} else if (that.video.mozExitFullScreen) {
-					that.video.mozExitFullScreen(); // Firefox
-				} else if (that.video.webkitExitFullscreen) {
-					that.video.webkitExitFullscreen(); // Chrome and Safari
+				if (document.ExitFullscreen) {
+					document.ExitFullscreen();
+				} else if (document.mozExitFullScreen) {
+					document.mozExitFullScreen(); // Firefox
+				} else if (document.webkitExitFullscreen) {
+					document.webkitExitFullscreen(); // Chrome and Safari
 				}
 
 				// On remet l'event mousemouve sur le document et on remove celui sur le player et les controls
-				$(document).on('mousemove', that.mouseMove);
-				that.$playerZone.hide().add( that.$playerControls ).off('mousemove', that.mouseMove);
+				document.addEventListener('mousemove', that.mouseMove);
+				that.playerZone.style.display = 'none';
+				that.playerZone.removeEventListener('mousemove', that.mouseMove);
+				that.playerControls.removeEventListener('mousemove', that.mouseMove);
 
 			} else {
 
@@ -291,11 +304,13 @@ $(function(){
 				}
 
 				// On retire l'event mousemouve du document et on l'ajoute sur le player et les controls
-				$(document).off('mousemove', that.mouseMove);
-				that.$playerZone.show().add( that.$playerControls ).on('mousemove', that.mouseMove);
+				document.removeEventListener('mousemove', that.mouseMove);
+				that.playerZone.style.display = 'block';
+				that.playerZone.addEventListener('mousemove', that.mouseMove);
+				that.playerControls.addEventListener('mousemove', that.mouseMove);
 			}
 
-			that.$videoPlayer.toggleClass('fullscreen');
+			that.videoPlayer.classList.toggle('fullscreen');
 		};
 
 		this.mouseMove = function(e){
@@ -330,55 +345,65 @@ $(function(){
 			}
 		};
 
+		this.mouseEnterProgressBar = function(e){
+			that.mouse.mouseenter.time = true;
+			that.videoPlayer.classList.add('mousetime-visible');
+		};
+
 		// Events
 		// this.video.addEventListener('readystatechange ', function(){console.log('state change');});
 		this.video.addEventListener('durationchange', function(){
 			// A partir de là on récup la duration
 			that.init();
 		});
-		this.$videoPlayer.on('mouseenter mousemove', this.showControls);
-		this.$videoPlayer.on('mouseleave', this.hideControls);
-		this.$playPause.on('click', this.playPause);
-		this.$fullscreen.on('click', this.togglefullscreen);
+		this.videoPlayer.addEventListener('mouseenter', this.showControls);
+		this.videoPlayer.addEventListener('mousemove', this.showControls);
+		this.videoPlayer.addEventListener('mouseleave', this.hideControls);
+
+		this.videoPlayPause.addEventListener('click', this.playPause);
+		this.fullscreen.addEventListener('click', this.togglefullscreen);
 		this.video.addEventListener('timeupdate', this.updateProgressBar, false);
 		this.video.addEventListener('progress', this.updateBufferBar, false);
 		// this.video.addEventListener('play', this.play );
 		// this.video.addEventListener('pause', this.pause );
-		this.$volumeZone.add(this.$progressbar).on( 'dragstart drop', function(){
-			return false;
-		});
-		this.$volumeZone.on( 'click', this.changeVolume );
-		this.$progressbar.on( 'click', this.changeTime );
+
+		// Prevent DRAG & DROP
+		this.volumeZone.addEventListener('dragstart',function(){return false;})
+		this.volumeZone.addEventListener('drop',function(){return false;})
+		this.progressbar.addEventListener('dragstart',function(){return false;})
+		this.progressbar.addEventListener('drop',function(){return false;})
+
+		this.volumeZone.addEventListener( 'click', this.changeVolume );
+		this.progressbar.addEventListener( 'click', this.changeTime );
 
 		// MOUSE DOWN
-		this.$volumeZone.on('mousedown', function(){
+		this.volumeZone.addEventListener('mousedown', function(){
 		    that.mouse.click.volume = true;
 		});
-		this.$progressbar.on('mousedown', function(){
+		this.progressbar.addEventListener('mousedown', function(){
 			// that.pause();
 		    that.mouse.click.time = true;
 		});
+
 		// HOVER ON PROGRESS BAR
-		this.$progressbarBar.add( this.$progressbarBorder ).on('mouseenter', function(){
-			that.mouse.mouseenter.time = true;
-			that.$videoPlayer.addClass('mousetime-visible');
-		});
+		this.progressbarBar.addEventListener('mouseenter', this.mouseEnterProgressBar);
+		this.progressbarBorder.addEventListener('mouseenter', this.mouseEnterProgressBar);
+
 		// HOVER OFF PROGRESS BAR
-		this.$progressbar.on('mouseleave', function(){
+		this.progressbar.addEventListener('mouseleave', function(){
 			that.mouse.mouseenter.time = false;
-			that.$videoPlayer.removeClass('mousetime-visible');
+			that.videoPlayer.classList.remove('mousetime-visible');
 		});
 
 		// MOUSE MOVE
-		$(document).on('mousemove', that.mouseMove);
+		document.addEventListener('mousemove', that.mouseMove);
 
 		// MOUSE UP
-		$(document).on('mouseup', function(){
+		document.addEventListener('mouseup', function(){
 			that.mouse.click.volume = false;
 			that.mouse.click.time = false;
-			that.$volumeZone.removeClass('active');
+			that.volumeZone.classList.remove('active');
 		});
-
 	};
 
 });
