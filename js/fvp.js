@@ -14,6 +14,12 @@ var WebFontConfig = {
 	s.parentNode.insertBefore(wf, s);
 })();
 
+var isOpera = !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
+var isFirefox = typeof InstallTrigger !== 'undefined';
+var isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
+var isChrome = !!window.chrome && !isOpera;
+var isIE = /*@cc_on!@*/false || !!document.documentMode;
+
 document.addEventListener('DOMContentLoaded', function(){
 
 	var videoPlayer =  new function(){
@@ -35,6 +41,7 @@ document.addEventListener('DOMContentLoaded', function(){
 		this.playerControls = document.querySelector('.videoPlayer__controls');
 		this.playerTime = document.querySelector('.progressbar__time > div');
 		this.playerMouseTime = document.querySelector('.progressbar__mousetime > div');
+
 		this.time = {
 			current : {
 				minutes : 0,
@@ -50,6 +57,7 @@ document.addEventListener('DOMContentLoaded', function(){
 		this.mouse = {
 			x : 0,
 			y : 0,
+			grab : false,
 			click : {},
 			mouseenter : {}
 		};
@@ -98,17 +106,49 @@ document.addEventListener('DOMContentLoaded', function(){
 			else
 				that.pause();
 		};
+
+		var timeoutplay;
 		this.play = function(){
-			// console.log('play function');
-			this.videoPlayPause.classList.remove('play');
-			this.videoPlayPause.classList.add('pause');
+
+			console.log('this.play');
+
+			if( this.video.readyState != 4 ) {
+				this.showBuffering();
+				clearTimeout(timeoutplay);
+				timeoutplay = setTimeout(function(){
+					that.play();
+				}, 1000);
+				return false;
+			} else {
+				this.hideBuffering();
+			}
+
+			this.showPause();
 			this.video.play();
 		};
+
 		this.pause = function(){
-			// console.log('pause function');
+			console.log('this.pause');
+			this.showPlay();
+			this.video.pause();
+		};
+
+		this.showPause = function(){
+			this.videoPlayPause.classList.remove('play');
+			this.videoPlayPause.classList.add('pause');
+		};
+		this.showPlay = function(){
 			this.videoPlayPause.classList.remove('pause');
 			this.videoPlayPause.classList.add('play');
-			this.video.pause();
+		};
+
+		this.showBuffering = function(){
+			this.videoPlayer.classList.add('buffering');
+			this.showPause();
+		};
+		this.hideBuffering = function(){
+			this.videoPlayer.classList.remove('buffering');
+			this.showPlay();
 		};
 
 		var isDurationInit = false;
@@ -151,7 +191,24 @@ document.addEventListener('DOMContentLoaded', function(){
 		};
 
 		this.end = function(){
-			this.$playPause.classList.remove('pause').classList.add('play');
+			this.videoPlayPause.classList.remove('pause');
+			this.videoPlayPause.classList.add('play');
+		};
+
+		// Get the index of the current part of the video which is buffering
+		this.getCurrentIndexBuffer = function(){
+			var current = this.video.currentTime;
+			// Récupere l'index juste inférieur au current time
+			var indexLastBuffer = that.video.buffered.length - 1;
+			var currentIndexBuffer = 0;
+			for(var i=indexLastBuffer;i>=0;i--) {
+				var start = that.video.buffered.start(i);
+				if( start <= current ) {
+					currentIndexBuffer = i;
+					break;
+				}
+			}
+			return currentIndexBuffer;
 		};
 
 		var percentVidLoaded;
@@ -161,7 +218,9 @@ document.addEventListener('DOMContentLoaded', function(){
 
 			// FF4+, Chrome
 			if (that.video && that.video.buffered && that.video.buffered.length > 0 && that.video.buffered.end && that.video.duration) {
-			    percentVidLoaded = that.video.buffered.end(0) / that.video.duration;
+
+				percentVidLoaded = that.video.buffered.end( that.getCurrentIndexBuffer() ) / that.video.duration;
+
 			}
 
 			// Some browsers (e.g., FF3.6 and Safari 5) cannot calculate target.bufferered.end()
@@ -174,14 +233,53 @@ document.addEventListener('DOMContentLoaded', function(){
 
 			if (percentVidLoaded !== null) {
 			    percentVidLoaded = 100 * Math.min(1, Math.max(0, percentVidLoaded));
-			} else {
-				percentVidLoaded = 100;
+			}else {
+				// percentVidLoaded = 100;
 			}
 
 			that.bufferBar.style.width = percentVidLoaded + '%';
 		};
 
+		this.grabCursor = function( setCursor ){
+
+			if(typeof setCursor === 'undefined')
+				setCursor = true;
+
+			if( that.mouse.grab && setCursor ) {
+				return false;
+			}
+
+			that.mouse.grab = true;
+
+			var grabCursor;
+			// IE doesn't support co-ordinates
+			var cursCoords = isIE ? "" : " 8 8";
+			var urlCloseHandCursor = 'https://mail.google.com/mail/images/2/closedhand.cur'
+
+		    grabCursor = isFirefox ? "-moz-grabbing" : "url("+urlCloseHandCursor+")" + cursCoords + ", move";
+		    // Opera doesn't support url cursors and doesn't fall back well...
+		    if (isOpera) grabCursor = "move";
+
+			// Desactiver curseur
+			if( !setCursor ) {
+				grabCursor = '';
+				that.mouse.grab = false;
+			}
+
+			document.body.style.cursor = grabCursor;
+			var  videoElements = document.querySelectorAll('.videoPlayer *');
+			for(var i=0;i<videoElements.length;i++) {
+				videoElements[i].style.cursor = grabCursor;
+			}
+			// videoElements.style.cursor = grabCursor;
+			// videoElements.style.cursor = grabCursor;
+			// document.querySelectorAll('.videoPlayer *');.style.cursor = grabCursor;
+			// console.log( grabCursor + ' !important' );
+			// document.body.setAttribute('style', 'cursor: '+ grabCursor + ' !important;' );
+		};
+
 		this.changeTime = function(){
+			that.videoPlayer.classList.remove('mousetime-visible');
 			var mouseX = that.getMousePosXRelativeTo( that.progressbar );
 			var barWidth = that.progressbar.offsetWidth;
 			var percentMouseX = (mouseX*100)/barWidth;
@@ -192,6 +290,7 @@ document.addEventListener('DOMContentLoaded', function(){
 		};
 
 		this.changeMouseTime = function(){
+			that.videoPlayer.classList.add('mousetime-visible');
 			var mouseX = that.getMousePosXRelativeTo( that.progressbar );
 			var barWidth = that.progressbar.offsetWidth;
 			var percentMouseX = (mouseX*100)/barWidth;
@@ -202,6 +301,7 @@ document.addEventListener('DOMContentLoaded', function(){
 		this.getMousePosXRelativeTo = function( el ){
 			// On récupère la position de la souris par rapport à la volumeZone
 			var rectEl = el.getBoundingClientRect();
+
 
 			var elOffset = {
 				top: rectEl.top + document.body.scrollTop,
@@ -217,6 +317,8 @@ document.addEventListener('DOMContentLoaded', function(){
 		};
 
 		this.changeVolume = function(){
+
+			that.grabCursor();
 
 			var mouseX = that.getMousePosXRelativeTo( that.volumeZone );
 
@@ -332,7 +434,7 @@ document.addEventListener('DOMContentLoaded', function(){
 			}
 
 			// Detect mouseenter + mousemove on time
-			if( that.mouse.mouseenter.time ) {
+			if( that.mouse.mouseenter.time && !that.mouse.click.time ) {
 				that.changeMouseTime();
 			}
 
@@ -347,7 +449,6 @@ document.addEventListener('DOMContentLoaded', function(){
 
 		this.mouseEnterProgressBar = function(e){
 			that.mouse.mouseenter.time = true;
-			that.videoPlayer.classList.add('mousetime-visible');
 		};
 
 		// Events
@@ -368,17 +469,20 @@ document.addEventListener('DOMContentLoaded', function(){
 		// this.video.addEventListener('pause', this.pause );
 
 		// Prevent DRAG & DROP
-		this.volumeZone.addEventListener('dragstart',function(){return false;})
-		this.volumeZone.addEventListener('drop',function(){return false;})
-		this.progressbar.addEventListener('dragstart',function(){return false;})
-		this.progressbar.addEventListener('drop',function(){return false;})
+		var volumeEls = document.querySelectorAll('.videoPlayer *');
+		for(var i=0;i<volumeEls.length;i++) {
+			volumeEls[i].ondragstart = function(){ return false; };
+		}
+		// this.volumeZone.addEventListener('drop',function(){return false;})
+		// this.progressbar.addEventListener('drop',function(){return false;})
 
-		this.volumeZone.addEventListener( 'click', this.changeVolume );
+		// this.volumeZone.addEventListener( 'click', this.changeVolume );
 		this.progressbar.addEventListener( 'click', this.changeTime );
 
 		// MOUSE DOWN
 		this.volumeZone.addEventListener('mousedown', function(){
 		    that.mouse.click.volume = true;
+		    that.changeVolume();
 		});
 		this.progressbar.addEventListener('mousedown', function(){
 			// that.pause();
@@ -403,6 +507,7 @@ document.addEventListener('DOMContentLoaded', function(){
 			that.mouse.click.volume = false;
 			that.mouse.click.time = false;
 			that.volumeZone.classList.remove('active');
+			that.grabCursor( false );
 		});
 	};
 

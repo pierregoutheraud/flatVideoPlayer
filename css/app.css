@@ -19,7 +19,7 @@ html, body {
 	overflow: hidden;
 
 	width: 900px;
-	height: 400px;
+	height: 550px;
 }
 
 .videoPlayer__video {
@@ -161,6 +161,9 @@ button:focus {
 	font-weight: 600;
 	font-size: 11px;
 	color: #fff;
+
+    user-select: none;
+    -webkit-user-select: none;
 }
 .progressbar__mousetime {
 	opacity: 0;
@@ -177,14 +180,15 @@ button:focus {
 	left: 0px;
 	width: 100%;
 	height: 100%;
-	border: 1px solid rgba(255,255,255,.4);
+	/*border: 1px solid rgba(255,255,255,.4);*/
+	border: 1px solid #666666;
 }
 
 .progressbar__bar {
 	position: absolute;
 	top: 0;
 	left: 0px;
-	z-index:2;
+	z-index:3;
 
 	height: 100%;
 	width: 0%;
@@ -192,14 +196,19 @@ button:focus {
 	background-color:#c0392b;
 }
 
+/*  ---------
+	Buffer bar
+	---------  */
+
 .progressbar__bufferbar {
 	position: absolute;
 	top: 0;
 	left: 0px;
 	height: 100%;
 	width: 0%;
-	z-index:1;
-	background-color:rgba(255,255,255,.4);
+	z-index:2;
+	/*background-color:rgba(255,255,255,.4);*/
+	background-color: #666666;
 }
 
 .progressbar__bufferbar {
@@ -238,8 +247,53 @@ button:focus {
 	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAeklEQVQoz73ROw7CMBCE4a3c+jy4wXfGkjlBuI5PkI8ikIB4hIqZaqVfq92ZELKuCEncnISiyyJkE4aqrcBJNTDJ4WzRzAosE/RQDHdtwKKhhFBX/hmYVRGS9nFDk8KO/wL8cOTx+5vfgzpsUb8D6CG7vJTVHsvaqfsKhslhKkJ8MosAAAAASUVORK5CYII=);
 }
 
+/*  ---------
+	Buffering
+	---------  */
 
-/* Volume */
+.progressbar__buffering {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 100%;
+	z-index:1;
+    overflow: hidden;
+	opacity: 0;
+	transition: opacity 300ms ease;
+	-webkit-transition: opacity 300ms ease;
+}
+
+.videoPlayer.buffering .progressbar__buffering {
+	opacity: 1;
+}
+
+.progressbar__buffering svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    -webkit-animation: buffer 250ms linear infinite;
+    animation: buffer 250ms linear infinite;
+    -moz-animation: bufferLeft 250ms linear infinite;
+}
+
+@-webkit-keyframes buffer {
+    100% {
+        -webkit-transform: translateX(-10px);
+        transform: translateX(-10px);
+    }
+}
+
+@keyframes buffer {
+    100% {
+        -webkit-transform: translateX(-10px);
+        transform: translateX(-10px);
+    }
+}
+
+/*  ------
+	Volume
+	------  */
 
 .controls__volume {
 	width:32px;
@@ -248,6 +302,7 @@ button:focus {
 	position: absolute;
 	right: 97px;
 	top: 17px;
+
 }
 .videoPlayer.comment-hidden .controls__volume {
 	right: 56px;
@@ -283,6 +338,8 @@ button:focus {
 	cursor: pointer;
     user-select: none;
     -webkit-user-select: none;
+
+	cursor: url(https://mail.google.com/mail/images/2/openhand.cur), move;
 }
 
 .controls__volume__zone.active {
