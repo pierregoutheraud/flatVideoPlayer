@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function(){
 			this.video.volume = 1;
 		};
 
-		// Set la duration de la vidéo et l'affiche
+		// Set la duration de la vidÃ©o et l'affiche
 		this.initDuration = function(){
 			this.time.duration.seconds = this.video.duration;
 			this.time.duration.format = this.toFormatMinutesSeconds( this.time.duration.seconds );
@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
 			console.log('this.play');
 
-			if( this.video.readyState != 4 ) {
+			/*if( this.video.readyState != 4 ) {
 				this.showBuffering();
 				clearTimeout(timeoutplay);
 				timeoutplay = setTimeout(function(){
@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function(){
 				return false;
 			} else {
 				this.hideBuffering();
-			}
+			}*/
 
 			this.showPause();
 			this.video.play();
@@ -144,15 +144,18 @@ document.addEventListener('DOMContentLoaded', function(){
 
 		this.showBuffering = function(){
 			this.videoPlayer.classList.add('buffering');
-			this.showPause();
+			// this.showPause();
 		};
 		this.hideBuffering = function(){
 			this.videoPlayer.classList.remove('buffering');
-			this.showPlay();
+			// this.showPlay();
 		};
 
 		var isDurationInit = false;
 		this.updateProgressBar = function(){
+
+			/*if( that.video.readyState == 1 ) that.showBuffering();
+			else that.hideBuffering();*/
 
 			if( !isDurationInit ) {
 				that.initDuration();
@@ -198,7 +201,7 @@ document.addEventListener('DOMContentLoaded', function(){
 		// Get the index of the current part of the video which is buffering
 		this.getCurrentIndexBuffer = function(){
 			var current = this.video.currentTime;
-			// Récupere l'index juste inférieur au current time
+			// RÃ©cupere l'index juste infÃ©rieur au current time
 			var indexLastBuffer = that.video.buffered.length - 1;
 			var currentIndexBuffer = 0;
 			for(var i=indexLastBuffer;i>=0;i--) {
@@ -299,7 +302,7 @@ document.addEventListener('DOMContentLoaded', function(){
 		};
 
 		this.getMousePosXRelativeTo = function( el ){
-			// On récupère la position de la souris par rapport à la volumeZone
+			// On rÃ©cupÃ¨re la position de la souris par rapport Ã  la volumeZone
 			var rectEl = el.getBoundingClientRect();
 
 
@@ -335,7 +338,7 @@ document.addEventListener('DOMContentLoaded', function(){
 			if( percentMouseX > 95 )
 				percentMouseX = 100;
 
-			// On ramène le résultat à une proportion pour une largeur sans les marges (qui font 3px) entre les bars
+			// On ramÃ¨ne le rÃ©sultat Ã  une proportion pour une largeur sans les marges (qui font 3px) entre les bars
 			mouseX *= (((document.querySelectorAll('.controls__volume > .volumeBar').length*volumeBarWidth)*100)/volumeZoneWidth)/100;
 
 			var nbBarFull = Math.floor(mouseX/volumeBarWidth);
@@ -454,7 +457,7 @@ document.addEventListener('DOMContentLoaded', function(){
 		// Events
 		// this.video.addEventListener('readystatechange ', function(){console.log('state change');});
 		this.video.addEventListener('durationchange', function(){
-			// A partir de là on récup la duration
+			// A partir de lÃ  on rÃ©cup la duration
 			that.init();
 		});
 		this.videoPlayer.addEventListener('mouseenter', this.showControls);
