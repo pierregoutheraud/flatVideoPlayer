@@ -52,7 +52,7 @@ HTMLElement.prototype.wrap = function(elms) {
 };
 
 FVP = (function() {
-  FVP.prototype.controlsHTML = "<div class=\"videoPlayer__zone\"></div>\n<div class=\"videoPlayer__controls\">\n    <button type=\"button\" class=\"controls__playPause play\"></button>\n    <div class=\"controls__progressbar\">\n        <div class=\"progressbar__time\">\n            <div><span>00:00</span></div>\n        </div>\n        <div class=\"progressbar__mousetime\">\n            <div><span>00:00</span></div>\n        </div>\n        <div class=\"progressbar__bar\"></div>\n        <div class=\"progressbar__border\">\n            <div class=\"progressbar__bufferbar\"></div>\n            <div class=\"progressbar__buffering\">\n                <svg width=\"110%\">\n                    <defs>\n                        <pattern id=\"buffer\" patternUnits=\"userSpaceOnUse\" x=\"0\" y=\"0\" width=\"10\" height=\"10\" viewBox=\"0 0 10 10\">\n                            <line x1=\"5\" y1=\"-1\" x2=\"-5\" y2=\"10\" stroke-width=\"2\" stroke=\"rgba(255,255,255,0.3)\" stroke-linecap=\"butt\"></line>\n                            <line x1=\"10\" y1=\"-1\" x2=\"0\" y2=\"10\" stroke-width=\"2\" stroke=\"rgba(255,255,255,0.3)\" stroke-linecap=\"butt\"></line>\n                            <line x1=\"15\" y1=\"-1\" x2=\"5\" y2=\"10\" stroke-width=\"2\" stroke=\"rgba(255,255,255,0.3)\" stroke-linecap=\"butt\"></line>\n                        </pattern>\n                    </defs>\n                    <rect fill=\"url(#buffer)\" width=\"100%\" height=\"100%\"></rect>\n                </svg>\n            </div>\n        </div>\n    </div>\n    <div class=\"controls__volume\">\n        <div class=\"volumeBar\"><div class=\"volumeBar\"></div></div>\n        <div class=\"volumeBar\"><div class=\"volumeBar\"></div></div>\n        <div class=\"volumeBar\"><div class=\"volumeBar\"></div></div>\n        <div class=\"volumeBar\"><div class=\"volumeBar\"></div></div>\n        <div class=\"volumeBar last\"><div class=\"volumeBar\"></div></div>\n        <div class=\"controls__volume__zone\"></div>\n    </div>\n    <button type=\"button\" class=\"controls__comment\"></button>\n    <button type=\"button\" class=\"controls__fullscreen\"></button>\n</div>";
+  FVP.prototype.controlsHTML = "<div class=\"videoPlayer__zone\"></div>\n<div class=\"videoPlayer__controls\">\n    <button type=\"button\" class=\"controls__playPause play\"></button>\n    <div class=\"controls__progressbar\">\n        <div class=\"progressbar__time\">\n            <div class=\"hidden\" ><span>00:00</span></div>\n        </div>\n        <div class=\"progressbar__mousetime\">\n            <div><span>00:00</span></div>\n        </div>\n        <div class=\"progressbar__bar\"></div>\n        <div class=\"progressbar__border\">\n            <div class=\"progressbar__bufferbar\"></div>\n            <div class=\"progressbar__buffering\">\n                <svg width=\"110%\">\n                    <defs>\n                        <pattern id=\"buffer\" patternUnits=\"userSpaceOnUse\" x=\"0\" y=\"0\" width=\"10\" height=\"10\" viewBox=\"0 0 10 10\">\n                            <line x1=\"5\" y1=\"-1\" x2=\"-5\" y2=\"10\" stroke-width=\"2\" stroke=\"rgba(255,255,255,0.3)\" stroke-linecap=\"butt\"></line>\n                            <line x1=\"10\" y1=\"-1\" x2=\"0\" y2=\"10\" stroke-width=\"2\" stroke=\"rgba(255,255,255,0.3)\" stroke-linecap=\"butt\"></line>\n                            <line x1=\"15\" y1=\"-1\" x2=\"5\" y2=\"10\" stroke-width=\"2\" stroke=\"rgba(255,255,255,0.3)\" stroke-linecap=\"butt\"></line>\n                        </pattern>\n                    </defs>\n                    <rect fill=\"url(#buffer)\" width=\"100%\" height=\"100%\"></rect>\n                </svg>\n            </div>\n        </div>\n    </div>\n    <div class=\"controls__volume\">\n        <div class=\"volumeBar\"><div class=\"volumeBar\"></div></div>\n        <div class=\"volumeBar\"><div class=\"volumeBar\"></div></div>\n        <div class=\"volumeBar\"><div class=\"volumeBar\"></div></div>\n        <div class=\"volumeBar\"><div class=\"volumeBar\"></div></div>\n        <div class=\"volumeBar last\"><div class=\"volumeBar\"></div></div>\n        <div class=\"controls__volume__zone\"></div>\n    </div>\n    <button type=\"button\" class=\"controls__comment\"></button>\n    <button type=\"button\" class=\"controls__fullscreen\"></button>\n</div>";
 
   FVP.prototype.time = {
     current: {
@@ -81,10 +81,11 @@ FVP = (function() {
 
   FVP.prototype.timeoutMousemove = null;
 
-  function FVP(videoSelector) {
-    var i, volumeEls,
-      _this = this;
-    this.videoSelector = videoSelector;
+  function FVP(options) {
+    var i, volumeEls;
+    this.options = options;
+    this.hideEl = __bind(this.hideEl, this);
+    this.showEl = __bind(this.showEl, this);
     this.mouseEnterProgressBar = __bind(this.mouseEnterProgressBar, this);
     this.mouseMove = __bind(this.mouseMove, this);
     this.togglefullscreen = __bind(this.togglefullscreen, this);
@@ -116,6 +117,11 @@ FVP = (function() {
     this.initDuration = __bind(this.initDuration, this);
     this.init = __bind(this.init, this);
     this.initHTML = __bind(this.initHTML, this);
+    this.videoSelector = this.options.video;
+    this.videoSize = {
+      width: this.options.width,
+      height: this.options.height
+    };
     this.initHTML();
     this.video.addEventListener("durationchange", this.init);
     this.videoPlayer.addEventListener("mouseenter", this.showControls);
@@ -134,37 +140,55 @@ FVP = (function() {
       i++;
     }
     this.progressbar.addEventListener("click", this.changeTime);
-    this.volumeZone.addEventListener("mousedown", function() {
-      _this.mouse.click.volume = true;
-      _this.changeVolume();
-    });
-    this.progressbar.addEventListener("mousedown", function() {
-      _this.mouse.click.time = true;
-    });
+    this.volumeZone.addEventListener("mousedown", (function(_this) {
+      return function() {
+        _this.mouse.click.volume = true;
+        _this.changeVolume();
+      };
+    })(this));
+    this.progressbar.addEventListener("mousedown", (function(_this) {
+      return function() {
+        _this.mouse.click.time = true;
+      };
+    })(this));
     this.progressbarBar.addEventListener("mouseenter", this.mouseEnterProgressBar);
     this.progressbarBorder.addEventListener("mouseenter", this.mouseEnterProgressBar);
-    this.progressbar.addEventListener("mouseleave", function() {
-      _this.mouse.mouseenter.time = false;
-      _this.videoPlayer.classList.remove("mousetime-visible");
-    });
+    this.progressbar.addEventListener("mouseleave", (function(_this) {
+      return function() {
+        _this.mouse.mouseenter.time = false;
+        _this.videoPlayer.classList.remove("mousetime-visible");
+      };
+    })(this));
     document.addEventListener("mousemove", this.mouseMove);
-    document.addEventListener("mouseup", function() {
-      _this.mouse.click.volume = false;
-      _this.mouse.click.time = false;
-      _this.volumeZone.classList.remove("active");
-      return _this.grabCursor(false);
-    });
+    document.addEventListener("mouseup", (function(_this) {
+      return function() {
+        _this.mouse.click.volume = false;
+        _this.mouse.click.time = false;
+        _this.volumeZone.classList.remove("active");
+        return _this.grabCursor(false);
+      };
+    })(this));
   }
 
   FVP.prototype.initHTML = function() {
     this.video = document.querySelector(this.videoSelector);
+    if (this.video == null) {
+      this.video = document.querySelector('video');
+      if (this.video == null) {
+        throw "Error : Cannot find your video " + this.videoSelector;
+      }
+    }
     this.video.classList.add('videoPlayer__video');
     this.videoPlayer = document.createElement('div');
     this.videoPlayer.classList.add('videoPlayer');
+    this.videoPlayer.classList.add('comment-hidden');
     this.videoPlayer.wrap(this.video);
     this.controls = document.createElement('div');
     this.controls.innerHTML = this.controlsHTML;
     this.videoPlayer.appendChild(this.controls);
+    console.log(this.videoSize);
+    this.videoPlayer.style.width = this.videoSize.width;
+    this.videoPlayer.style.height = this.videoSize.height;
     this.videoPlayPause = document.querySelector('.controls__playPause');
     this.progressbar = document.querySelector('.controls__progressbar');
     this.progressbarBar = document.querySelector('.progressbar__bar');
@@ -189,7 +213,8 @@ FVP = (function() {
   FVP.prototype.initDuration = function() {
     this.time.duration.seconds = this.video.duration;
     this.time.duration.format = this.toFormatMinutesSeconds(this.time.duration.seconds);
-    return this.setTextTime(this.time.duration.format);
+    this.setTextTime(this.time.duration.format);
+    return this.showEl(this.playerTime);
   };
 
   FVP.prototype.toFormatMinutesSeconds = function(totalSeconds) {
@@ -476,21 +501,23 @@ FVP = (function() {
   };
 
   FVP.prototype.mouseMove = function(e) {
-    var _this = this;
     this.mouse.x = e.clientX;
     this.mouse.y = e.clientY;
     if (this.mouse.click.volume && this.canChangeVolume) {
       this.canChangeVolume = false;
-      setTimeout((function() {
-        return _this.canChangeVolume = true;
-      }), 50);
-      console.log('changeVolume');
+      setTimeout(((function(_this) {
+        return function() {
+          return _this.canChangeVolume = true;
+        };
+      })(this)), 50);
       this.changeVolume();
     } else if (this.mouse.click.time && this.canChangeTime) {
       this.canChangeTime = false;
-      setTimeout((function() {
-        return _this.canChangeTime = true;
-      }), 50);
+      setTimeout(((function(_this) {
+        return function() {
+          return _this.canChangeTime = true;
+        };
+      })(this)), 50);
       this.changeTime();
     }
     if (this.mouse.mouseenter.time && !this.mouse.click.time) {
@@ -498,18 +525,26 @@ FVP = (function() {
     }
     clearTimeout(this.timeoutMousemove);
     if (!this.mouse.mouseenter.time) {
-      return this.timeoutMousemove = setTimeout(function() {
-        return _this.hideControls();
-      }, 1500);
+      return this.timeoutMousemove = setTimeout((function(_this) {
+        return function() {
+          return _this.hideControls();
+        };
+      })(this), 1500);
     }
   };
 
   FVP.prototype.mouseEnterProgressBar = function(e) {
-    this.mouse.mouseenter.time = true;
+    return this.mouse.mouseenter.time = true;
+  };
+
+  FVP.prototype.showEl = function(el) {
+    return el.classList.remove('hidden');
+  };
+
+  FVP.prototype.hideEl = function(el) {
+    return el.classList.add('hidden');
   };
 
   return FVP;
 
 })();
-
- //# sourceMappingURL=fvp.js.map

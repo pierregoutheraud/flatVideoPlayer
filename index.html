@@ -14,7 +14,11 @@
     <script src="js/fvp.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function(){
-            flatVideoPlayer = new FVP('#video462314');
+            flatVideoPlayer = new FVP({
+                width: 500,
+                height: 500,
+                video: '#video462314'
+            });
         });
     </script>
 

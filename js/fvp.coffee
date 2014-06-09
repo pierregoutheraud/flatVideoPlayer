@@ -19,7 +19,6 @@ isSafari = Object::toString.call(window.HTMLElement).indexOf("Constructor") > 0
 isChrome = !!window.chrome and not isOpera
 isIE = false or !!document.documentMode #@cc_on!@
 
-
 HTMLElement::wrap = (elms) ->
   elms = [elms]  unless elms.length
   i = elms.length - 1
@@ -43,7 +42,7 @@ class FVP
 	      <button type="button" class="controls__playPause play"></button>
 	      <div class="controls__progressbar">
 	          <div class="progressbar__time">
-	              <div><span>00:00</span></div>
+	              <div class="hidden" ><span>00:00</span></div>
 	          </div>
 	          <div class="progressbar__mousetime">
 	              <div><span>00:00</span></div>
@@ -99,7 +98,12 @@ class FVP
 	canChangeTime: true
 	timeoutMousemove: null
 
-	constructor: (@videoSelector) ->
+	constructor: (@options) ->
+
+		@videoSelector = @options.video
+		@videoSize =
+			width: @options.width
+			height: @options.height
 
 		@initHTML()
 
@@ -165,17 +169,31 @@ class FVP
 	initHTML: =>
 
 		@video = document.querySelector @videoSelector
+
+		if not @video?
+			@video = document.querySelector 'video'
+			if not @video?
+				throw "Error : Cannot find your video #{@videoSelector}"
+
 		@video.classList.add 'videoPlayer__video'
 
+		# Create container
 		@videoPlayer = document.createElement('div')
 		@videoPlayer.classList.add 'videoPlayer'
-
+		@videoPlayer.classList.add 'comment-hidden'
 		@videoPlayer.wrap( @video )
 
+		# Create controls
 		@controls = document.createElement('div')
 		@controls.innerHTML = @controlsHTML
 		@videoPlayer.appendChild @controls
 
+		# Set video size
+		console.log @videoSize
+		@videoPlayer.style.width = @videoSize.width
+		@videoPlayer.style.height = @videoSize.height
+
+		# Set controls attributes
 		@videoPlayPause = document.querySelector '.controls__playPause'
 		@progressbar = document.querySelector '.controls__progressbar'
 		@progressbarBar = document.querySelector '.progressbar__bar'
@@ -191,7 +209,7 @@ class FVP
 		@playerTime = document.querySelector '.progressbar__time > div'
 		@playerMouseTime = document.querySelector '.progressbar__mousetime > div'
 
-	# Functions
+	# First init
 	init: =>
 		@video.controls = false
 		@video.volume = 1
@@ -201,6 +219,7 @@ class FVP
 		@time.duration.seconds = @video.duration
 		@time.duration.format = @toFormatMinutesSeconds(@time.duration.seconds)
 		@setTextTime @time.duration.format
+		@showEl @playerTime
 
 	# seconds to minutes and seconds
 	toFormatMinutesSeconds: (totalSeconds) =>
@@ -462,7 +481,6 @@ class FVP
 		return
 
 	hideControls: =>
-
 		# On ne cache pas si on est en train de changer le time ou le volume
 		return false  if @mouse.click.volume or @mouse.click.time
 		@videoPlayer.classList.add "controls-hidden"
@@ -505,7 +523,6 @@ class FVP
 			setTimeout ( =>
 				@canChangeVolume = true
 			), 50
-			console.log 'changeVolume'
 			@changeVolume()
 		else if @mouse.click.time and @canChangeTime
 			@canChangeTime = false
@@ -526,4 +543,35 @@ class FVP
 
 	mouseEnterProgressBar: (e) =>
 		@mouse.mouseenter.time = true
-		return
+
+	showEl: (el) =>
+		el.classList.remove 'hidden'
+
+	hideEl: (el) =>
+		el.classList.add 'hidden'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
