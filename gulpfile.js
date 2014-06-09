@@ -1,7 +1,8 @@
 var gulp = require('gulp'),
 	gulpLivereload = require('gulp-livereload'),
 	gulpCoffee = require('gulp-coffee'),
-	gulpPlumber = require('gulp-plumber');
+	gulpPlumber = require('gulp-plumber'),
+	gulpUglify = require('gulp-uglify');
 
 gulp.task('coffee', function(){
 	return gulp.src('js/*.coffee')
@@ -14,7 +15,9 @@ gulp.task('coffee', function(){
 });
 
 gulp.task('default', ['coffee'], function(){
-	return true;
+	return gulp.src('js/*.js')
+						 .pipe(gulpUglify())
+						 .pipe(gulp.dest('dist'));
 });
 
 gulp.task('watch', function(){
