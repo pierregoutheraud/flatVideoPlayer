@@ -1,39 +1,5 @@
 "use strict"
 
-# Open Sans Google Font
-WebFontConfig = google:
-	families: ["Open+Sans:400italic,400,600,700:latin"]
-
-(->
-	wf = document.createElement("script")
-	wf.src = ((if "https:" is document.location.protocol then "https" else "http")) + "://ajax.googleapis.com/ajax/libs/webfont/1/webfont.js"
-	wf.type = "text/javascript"
-	wf.async = "true"
-	s = document.getElementsByTagName("script")[0]
-	s.parentNode.insertBefore wf, s
-	return
-)()
-isOpera = !!window.opera or navigator.userAgent.indexOf(" OPR/") >= 0
-isFirefox = typeof InstallTrigger isnt "undefined"
-isSafari = Object::toString.call(window.HTMLElement).indexOf("Constructor") > 0
-isChrome = !!window.chrome and not isOpera
-isIE = false or !!document.documentMode #@cc_on!@
-
-HTMLElement::wrap = (elms) ->
-  elms = [elms]  unless elms.length
-  i = elms.length - 1
-  while i >= 0
-    child = (if (i > 0) then @cloneNode(true) else this)
-    el = elms[i]
-    parent = el.parentNode
-    sibling = el.nextSibling
-    child.appendChild el
-    if sibling
-      parent.insertBefore child, sibling
-    else
-      parent.appendChild child
-    i--
-
 class FVP
 
 	controlsHTML: """
@@ -217,7 +183,8 @@ class FVP
 		@time.duration.seconds = @video.duration
 		@time.duration.format = @toFormatMinutesSeconds(@time.duration.seconds)
 		@setTextTime @time.duration.format
-		@showEl @playerTime
+		# @showEl @playerTime
+		@playerTime.parentNode.classList.add 'visible'
 
 	# seconds to minutes and seconds
 	toFormatMinutesSeconds: (totalSeconds) =>
@@ -548,7 +515,39 @@ class FVP
 	hideEl: (el) =>
 		el.classList.add 'hidden'
 
+# Open Sans Google Font
+WebFontConfig = google:
+	families: ["Open+Sans:400italic,400,600,700:latin"]
 
+(->
+	wf = document.createElement("script")
+	wf.src = ((if "https:" is document.location.protocol then "https" else "http")) + "://ajax.googleapis.com/ajax/libs/webfont/1/webfont.js"
+	wf.type = "text/javascript"
+	wf.async = "true"
+	s = document.getElementsByTagName("script")[0]
+	s.parentNode.insertBefore wf, s
+	return
+)()
+isOpera = !!window.opera or navigator.userAgent.indexOf(" OPR/") >= 0
+isFirefox = typeof InstallTrigger isnt "undefined"
+isSafari = Object::toString.call(window.HTMLElement).indexOf("Constructor") > 0
+isChrome = !!window.chrome and not isOpera
+isIE = false or !!document.documentMode #@cc_on!@
+
+HTMLElement::wrap = (elms) ->
+  elms = [elms]  unless elms.length
+  i = elms.length - 1
+  while i >= 0
+    child = (if (i > 0) then @cloneNode(true) else this)
+    el = elms[i]
+    parent = el.parentNode
+    sibling = el.nextSibling
+    child.appendChild el
+    if sibling
+      parent.insertBefore child, sibling
+    else
+      parent.appendChild child
+    i--
 
 
 
