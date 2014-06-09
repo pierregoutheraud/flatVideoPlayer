@@ -17,9 +17,6 @@ html, body {
 	display: inline-block;
 	margin-top: 50px;
 	overflow: hidden;
-
-	width: 900px;
-	height: 550px;
 }
 
 .videoPlayer__video {

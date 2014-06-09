@@ -181,17 +181,15 @@ class FVP
 		@videoPlayer = document.createElement('div')
 		@videoPlayer.classList.add 'videoPlayer'
 		@videoPlayer.classList.add 'comment-hidden'
-		@videoPlayer.wrap( @video )
+		# Set video size
+		@videoPlayer.style.width = @videoSize.width + 'px'
+		@videoPlayer.style.height = @videoSize.height + 'px'
+		@videoPlayer.wrap @video
 
 		# Create controls
 		@controls = document.createElement('div')
 		@controls.innerHTML = @controlsHTML
 		@videoPlayer.appendChild @controls
-
-		# Set video size
-		console.log @videoSize
-		@videoPlayer.style.width = @videoSize.width
-		@videoPlayer.style.height = @videoSize.height
 
 		# Set controls attributes
 		@videoPlayPause = document.querySelector '.controls__playPause'
