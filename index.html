@@ -3,21 +3,22 @@
 <head>
     <meta charset="utf-8">
     <title>Flat Video Player</title>
-    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="dist/fvp.css">
 </head>
 <body>
 
-    <video id="video462314" >
-        <source src="http://pierregoutheraud.fr/videos/bemag.mp4" type="video/mp4">
+    <video id="video666" >
+        <source src="http://pierregoutheraud.fr/videos/1402508484443.webm" type="video/webm" >
     </video>
 
-    <script src="js/fvp.js"></script>
+    <script src="dist/fvp.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function(){
             flatVideoPlayer = new FVP({
-                width: 900,
-                height: 550,
-                video: '#video462314'
+                width: 800,
+                height: 450,
+                video: '#video666',
+                autoplay: true
             });
         });
     </script>
