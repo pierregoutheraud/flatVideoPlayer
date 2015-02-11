@@ -229,8 +229,6 @@ class FVP
 
   timeoutplay: undefined
   play: =>
-    console.log "@play"
-
     #if( this.video.readyState != 4 ) {
     #       this.showBuffering();
     #       clearTimeout(timeoutplay);

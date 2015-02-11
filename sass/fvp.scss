@@ -357,7 +357,8 @@ button {
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
-  cursor: url(https://mail.google.com/mail/images/2/openhand.cur), move;
+  cursor: url(http://www.google.com/intl/en_ALL/mapfiles/openhand.cur), move;
+  // cursor: url(http://www.google.com/intl/en_ALL/mapfiles/closedhand.cur), move;
   &.active {
     cursor: w-resize;
   }

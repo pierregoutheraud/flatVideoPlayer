@@ -220,7 +220,6 @@ FVP = (function() {
   FVP.prototype.timeoutplay = void 0;
 
   FVP.prototype.play = function() {
-    console.log("@play");
     this.showPause();
     this.video.play();
   };
